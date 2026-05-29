@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memorama Lila</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:#F3E8FF;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.container{
+    text-align:center;
+}
+
+h1{
+    color:#6B21A8;
+    margin-bottom:20px;
+}
+
+.info{
+    margin-bottom:15px;
+    color:#4C1D95;
+    font-size:18px;
+}
+
+.game{
+    width:420px;
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:10px;
+}
+
+.card{
+    width:90px;
+    height:90px;
+    background:#C084FC;
+    border-radius:15px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+    font-size:40px;
+    color:transparent;
+    transition:0.3s;
+    user-select:none;
+}
+
+.card:hover{
+    background:#A855F7;
+}
+
+.card.flipped{
+    background:#E9D5FF;
+    color:#4C1D95;
+    transform:rotateY(180deg);
+}
+
+button{
+    margin-top:20px;
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    background:#A855F7;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    background:#7E22CE;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>💜 Memorama Lila 💜</h1>
+
+    <div class="info">
+        Movimientos: <span id="moves">0</span>
+    </div>
+
+    <div class="game" id="game"></div>
+
+    <button onclick="restartGame()">Reiniciar</button>
+</div>
+
+<script>
+const emojis = ['🍇','🍓','🍍','🥝','🍒','🍉','🍋','🥥'];
+let cardsArray = [...emojis, ...emojis];
+
+let firstCard = null;
+let secondCard = null;
+let lockBoard = false;
+let moves = 0;
+let matchedPairs = 0;
+
+const game = document.getElementById('game');
+const movesText = document.getElementById('moves');
+
+function shuffle(array){
+    return array.sort(() => Math.random() - 0.5);
+}
+
+function createBoard(){
+    game.innerHTML = '';
+    shuffle(cardsArray);
+
+    cardsArray.forEach(emoji => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.emoji = emoji;
+        card.innerHTML = emoji;
+
+        card.addEventListener('click', flipCard);
+
+        game.appendChild(card);
+    });
+}
+
+function flipCard(){
+
+    if(lockBoard) return;
+
+    if(this === firstCard) return;
+
+    this.classList.add('flipped');
+
+    if(!firstCard){
+        firstCard = this;
+        return;
+    }
+
+    secondCard = this;
+    lockBoard = true;
+
+    moves++;
+    movesText.textContent = moves;
+
+    checkMatch();
+}
+
+function checkMatch(){
+
+    let isMatch =
+        firstCard.dataset.emoji ===
+        secondCard.dataset.emoji;
+
+    if(isMatch){
+        disableCards();
+        matchedPairs++;
+
+        if(matchedPairs === emojis.length){
+            setTimeout(() => {
+                alert('🎉 ¡Ganaste!');
+            }, 500);
+        }
+
+    }else{
+        unflipCards();
+    }
+}
+
+function disableCards(){
+    firstCard.removeEventListener('click', flipCard);
+    secondCard.removeEventListener('click', flipCard);
+
+    resetBoard();
+}
+
+function unflipCards(){
+
+    setTimeout(() => {
+
+        firstCard.classList.remove('flipped');
+        secondCard.classList.remove('flipped');
+
+        resetBoard();
+
+    }, 1000);
+}
+
+function resetBoard(){
+    [firstCard, secondCard] = [null, null];
+    lockBoard = false;
+}
+
+function restartGame(){
+    firstCard = null;
+    secondCard = null;
+    lockBoard = false;
+    moves = 0;
+    matchedPairs = 0;
+
+    movesText.textContent = moves;
+
+    createBoard();
+}
+
+createBoard();
+</script>
+
+</body>
+</html>
